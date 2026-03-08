@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useStudyStore } from '../../src/stores/useStudyStore';
-import { CardView } from '../../src/components/study/CardView';
-import { AnswerButtons } from '../../src/components/study/AnswerButtons';
-import { CardCounter } from '../../src/components/study/CardCounter';
+import { useStudyStore } from '@/stores/useStudyStore';
+import { CardView } from '@/components/study/CardView';
+import { AnswerButtons } from '@/components/study/AnswerButtons';
+import { CardCounter } from '@/components/study/CardCounter';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../src/constants/colors';
-import { SoundService } from '../../src/services/media/SoundService';
+import { Colors } from '@/constants/colors';
+import { SoundService } from '@/services/media/SoundService';
 
 export default function StudyScreen() {
     const { deckId } = useLocalSearchParams();

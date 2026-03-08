@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { dbService } from '../src/services/database/DatabaseService';
+import { dbService } from '@/services/database/DatabaseService';
 import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { useState } from 'react';

@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { View, FlatList, StyleSheet, Text, Pressable } from 'react-native';
-import { useDeckStore } from '../../src/stores/useDeckStore';
-import { DeckListItem } from '../../src/components/deck/DeckListItem';
+import { useDeckStore } from '@/stores/useDeckStore';
+import { DeckListItem } from '@/components/deck/DeckListItem';
 import { useRouter } from 'expo-router';
-import { Colors } from '../../src/constants/colors';
+import { Colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function DeckListScreen() {

@@ -7,7 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "eslint src/ app/ --ext .ts,.tsx",
+    "lint": "eslint src/ --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

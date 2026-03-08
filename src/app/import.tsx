@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { useDeckStore } from '../src/stores/useDeckStore';
-import { useImportStore } from '../src/stores/useImportStore';
-import { ApkgImportService } from '../src/services/import/ApkgImportService';
+import { useDeckStore } from '@/stores/useDeckStore';
+import { useImportStore } from '@/stores/useImportStore';
+import { ApkgImportService } from '@/services/import/ApkgImportService';
 import { useRouter } from 'expo-router';
 
 export default function ImportScreen() {
