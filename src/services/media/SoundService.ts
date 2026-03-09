@@ -1,50 +1,51 @@
-import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system/legacy';
+import { createAudioPlayer, AudioPlayer } from 'expo-audio';
+import { Paths } from 'expo-file-system';
 
 export class SoundService {
-    private static sound: Audio.Sound | null = null;
+    private static player: AudioPlayer | null = null;
     private static getMediaDir(): string {
-        const docDir = FileSystem.documentDirectory || '';
+        const docDir = Paths.document.uri || '';
         const baseDir = docDir.endsWith('/') ? docDir : `${docDir}/`;
         return `${baseDir}media/`;
     }
 
     private static mediaDir = SoundService.getMediaDir();
 
-
     static async play(filename: string): Promise<void> {
         try {
-            // Stop and unload previous sound
-            if (this.sound) {
-                await this.sound.stopAsync();
-                await this.sound.unloadAsync();
-                this.sound = null;
+            // Remove previous player
+            if (this.player) {
+                this.player.removeListener('playbackStatusUpdate', this.onStatusUpdate);
+                this.player.release();
+                this.player = null;
             }
 
             const uri = `${this.mediaDir}${filename}`;
-            const { sound } = await Audio.Sound.createAsync(
-                { uri },
-                { shouldPlay: true }
-            );
-
-            this.sound = sound;
-
-            sound.setOnPlaybackStatusUpdate((status) => {
-                if (status.isLoaded && status.didJustFinish) {
-                    sound.unloadAsync();
-                    if (this.sound === sound) this.sound = null;
-                }
-            });
+            this.player = createAudioPlayer(uri);
+            this.player.addListener('playbackStatusUpdate', this.onStatusUpdate);
+            this.player.play();
         } catch (error) {
             console.error('Error playing sound:', filename, error);
         }
     }
 
+    private static onStatusUpdate = (status: any) => {
+        if (status.didJustFinish) {
+            if (this.player) {
+                this.player.release();
+                this.player = null;
+            }
+        }
+    };
+
     static async stop(): Promise<void> {
-        if (this.sound) {
-            await this.sound.stopAsync();
-            await this.sound.unloadAsync();
-            this.sound = null;
+        if (this.player) {
+            this.player.pause();
+            this.player.release();
+            this.player = null;
         }
     }
 }
+
+
+

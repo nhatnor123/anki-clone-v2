@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system/legacy';
+import { Paths, Directory, File } from 'expo-file-system';
 import JSZip from 'jszip';
 import { AnkiDatabaseParser } from './AnkiDatabaseParser';
 import { MediaExtractor } from './MediaExtractor';
@@ -12,29 +12,31 @@ export class ApkgImportService {
   constructor(private onProgress: (progress: number, message: string) => void) { }
 
   async import(uri: string): Promise<void> {
-    const tempDir = `${FileSystem.cacheDirectory}anki_import_${Date.now()}`;
+    const tempDir = new Directory(Paths.cache, `anki_import_${Date.now()}`);
 
-    console.log("tempDir", tempDir);
+    console.log("tempDir", tempDir.uri);
 
     try {
       // 1. Unzip .apkg (which is just a zip file)
       this.onProgress(10, 'Unzipping .apkg file...');
-      await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
+      if (!tempDir.exists) {
+        tempDir.create({ intermediates: true });
+      }
 
-      const fileBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const zipFile = new File(uri);
+      const fileBase64 = await zipFile.base64();
       const zip = new JSZip();
       const content = await zip.loadAsync(fileBase64, { base64: true });
 
-      const filePaths: string[] = [];
       const totalFiles = Object.keys(content.files).length;
       let extractedCount = 0;
 
       for (const [filename, zipEntry] of Object.entries(content.files)) {
         if (zipEntry.dir) continue;
         const entryBase64 = await zipEntry.async('base64');
-        const outputPath = `${tempDir}/${filename}`;
-        await FileSystem.writeAsStringAsync(outputPath, entryBase64, { encoding: FileSystem.EncodingType.Base64 });
-        filePaths.push(outputPath);
+        const outputFile = new File(tempDir, filename);
+        outputFile.create({ overwrite: true });
+        outputFile.write(entryBase64, { encoding: 'base64' });
 
         extractedCount++;
         this.onProgress(10 + Math.floor((extractedCount / totalFiles) * 20), `Extracting: ${filename}`);
@@ -42,48 +44,46 @@ export class ApkgImportService {
 
       // 2. Parse collection.anki2 or collection.anki21
       this.onProgress(35, 'Parsing Anki database...');
-      let dbPath = `${tempDir}/collection.anki2`;
-      let dbInfo = await FileSystem.getInfoAsync(dbPath);
+      let dbFile = new File(tempDir, 'collection.anki2');
 
-      if (!dbInfo.exists) {
-        dbPath = `${tempDir}/collection.anki21`;
-        dbInfo = await FileSystem.getInfoAsync(dbPath);
+      if (!dbFile.exists) {
+        dbFile = new File(tempDir, 'collection.anki21');
       }
 
-      if (!dbInfo.exists) {
-        // List files for debugging if needed (log to console)
-        const files = await FileSystem.readDirectoryAsync(tempDir);
-        console.log('Files in extracted tempDir:', files);
+      if (!dbFile.exists) {
+        // List files for debugging
+        const files = tempDir.list();
+        console.log('Files in extracted tempDir:', files.map(f => f.uri));
         throw new Error('Invalid .apkg: Could not find collection.anki2 or collection.anki21');
       }
 
       // Move to SQLite directory to open with expo-sqlite
-      const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
-      const importDbPath = `${sqliteDir}/import_anki.db`;
-      const sqliteDirInfo = await FileSystem.getInfoAsync(sqliteDir);
-      if (!sqliteDirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+      const sqliteDir = new Directory(Paths.document, 'SQLite');
+      const importDbFile = new File(sqliteDir, 'import_anki.db');
+
+      if (!sqliteDir.exists) {
+        sqliteDir.create({ intermediates: true });
       }
 
       // Clear any previous failed import
-      try {
-        await FileSystem.deleteAsync(importDbPath, { idempotent: true });
-      } catch (e) { /* ignore */ }
+      if (importDbFile.exists) {
+        importDbFile.delete();
+      }
 
-      await FileSystem.copyAsync({ from: dbPath, to: importDbPath });
+      dbFile.copy(importDbFile);
 
       const parser = new AnkiDatabaseParser('import_anki.db');
       const data = await parser.parse();
 
       // Cleanup: Delete the imported db from SQLite folder
-      try {
-        await FileSystem.deleteAsync(importDbPath, { idempotent: true });
-      } catch (e) { /* ignore */ }
+      if (importDbFile.exists) {
+        importDbFile.delete();
+      }
 
       // 3. Extract media
       this.onProgress(50, 'Extracting media files...');
-      const targetMediaDir = `${FileSystem.documentDirectory}media`;
-      await MediaExtractor.extractMedia(tempDir, targetMediaDir);
+      const targetMediaDir = new Directory(Paths.document, 'media').uri + '/';
+      await MediaExtractor.extractMedia(tempDir.uri, targetMediaDir);
 
       // 4. Map to app schema and save
       this.onProgress(70, 'Saving to local database...');
@@ -96,13 +96,12 @@ export class ApkgImportService {
       throw new Error(`Failed to import: ${error.message}`);
     } finally {
       // Cleanup temp directory
-      try {
-        await FileSystem.deleteAsync(tempDir, { idempotent: true });
-      } catch (e) {
-        console.warn('Failed to cleanup temp import dir', e);
+      if (tempDir.exists) {
+        tempDir.delete();
       }
     }
   }
+
 
   private async saveToDatabase(data: any) {
     // In MVP: Insert everything directly. Later: Check for duplicates/merge.
@@ -167,3 +166,4 @@ export class ApkgImportService {
     }
   }
 }
+

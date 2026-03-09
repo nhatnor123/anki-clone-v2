@@ -34,12 +34,7 @@
           "iCloudContainerEnvironment": "Production"
         }
       ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": "Allow Anki Clone to access your microphone."
-        }
-      ]
+      "expo-audio"
     ],
     "scheme": "ankiclone"
   }
