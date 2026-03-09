@@ -14,14 +14,14 @@ export class TemplateRenderer {
   private static mediaDir = TemplateRenderer.getMediaDir();
 
 
-  static renderQuestion(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates): { html: string; sounds: string[] } {
+  static async renderQuestion(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates): Promise<{ html: string; sounds: string[] }> {
     const template = noteType.templates[card.template_ordinal];
-    return this.render(template.question_format, note, noteType, card);
+    return await this.render(template.question_format, note, noteType, card);
   }
 
-  static renderAnswer(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates, questionHtml: string): { html: string; sounds: string[] } {
+  static async renderAnswer(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates, questionHtml: string): Promise<{ html: string; sounds: string[] }> {
     const template = noteType.templates[card.template_ordinal];
-    const { html: answerHtml, sounds } = this.render(template.answer_format, note, noteType, card);
+    const { html: answerHtml, sounds } = await this.render(template.answer_format, note, noteType, card);
 
     // Replace {{FrontSide}} with the question content
     const html = answerHtml.replace(/\{\{FrontSide\}\}/g, questionHtml);
@@ -29,12 +29,39 @@ export class TemplateRenderer {
     return { html, sounds };
   }
 
-  private static render(template: string, note: Note, noteType: NoteTypeWithFieldsAndTemplates, card?: Card): { html: string; sounds: string[] } {
+  private static async getImageBase64(filename: string): Promise<string | null> {
+    try {
+      const baseFilename = filename.split('/').pop() || filename;
+      const uri = `${this.mediaDir}${baseFilename}`;
+
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) {
+        console.warn(`File does not exist: ${uri}`);
+        return null;
+      }
+
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const extension = baseFilename.split('.').pop()?.toLowerCase();
+      let mimeType = 'image/jpeg';
+      if (extension === 'png') mimeType = 'image/png';
+      else if (extension === 'gif') mimeType = 'image/gif';
+      else if (extension === 'svg') mimeType = 'image/svg+xml';
+      else if (extension === 'webp') mimeType = 'image/webp';
+
+      return `data:${mimeType};base64,${base64}`;
+    } catch (error) {
+      console.error(`Error reading image to base64: ${filename}`, error);
+      return null;
+    }
+  }
+
+  private static async render(template: string, note: Note, noteType: NoteTypeWithFieldsAndTemplates, card?: Card): Promise<{ html: string; sounds: string[] }> {
     let html = template;
     const sounds: string[] = [];
     const fieldValues = note.fields.split('\u001f');
-
-    console.log("ram html", html);
 
     // 1. Special Anki Tags
     html = html.replace(/\{\{Tags\}\}/gi, note.tags || '');
@@ -77,21 +104,32 @@ export class TemplateRenderer {
       return '';
     });
 
-    // 5. Resolve media paths (<img src="cat.jpg"> or <img src='cat.jpg'>)
-    // Use absolute paths for direct file access
-    html = html.replace(/src=['"]([^'"]+)['"]/gi, (match, filename) => {
-      if (filename.startsWith('http') || filename.startsWith('data:')) return match;
-      const baseFilename = filename.split('/').pop();
-      return `src="${TemplateRenderer.mediaDir}${baseFilename}"`;
-    });
+    // 5. Resolve media paths and convert to Base64
+    const imgRegex = /src=['"]([^'"]+)['"]/gi;
+    let match;
+    const replacements: { original: string; base64: string }[] = [];
 
+    while ((match = imgRegex.exec(html)) !== null) {
+      const filename = match[1];
+      if (!filename.startsWith('http') && !filename.startsWith('data:')) {
+        const base64Data = await this.getImageBase64(filename);
+        if (base64Data) {
+          replacements.push({ original: filename, base64: base64Data });
+        }
+      }
+    }
+
+    // Apply replacements
+    for (const replacement of replacements) {
+      // Use split/join to replace all occurrences effectively
+      html = html.split(`src="${replacement.original}"`).join(`src="${replacement.base64}"`);
+      html = html.split(`src='${replacement.original}'`).join(`src='${replacement.base64}'`);
+    }
 
     // 6. Remove any remaining unknown tags
     html = html.replace(/\{\{[^}]+\}\}/g, '');
 
-    console.log("transformed html", html);
-
-    // 5. Wrap in styling
+    // 7. Wrap in styling
     const wrappedHtml = `
       <html>
         <head>

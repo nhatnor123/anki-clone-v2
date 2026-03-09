@@ -2,8 +2,6 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import * as FileSystem from 'expo-file-system/legacy';
-
 interface CardViewProps {
     html: string;
 }
@@ -32,28 +30,14 @@ interface CardViewProps {
 // };
 
 export const CardView: React.FC<CardViewProps> = ({ html }) => {
-    // Point this to the base "media" directory or the DocumentDirectory
-    const mediaDir = `${FileSystem.documentDirectory}media/`;
-
     return (
         <View style={styles.container}>
             <WebView
                 originWhitelist={['*']}
-                // Using baseUrl here allows you to use relative paths in your HTML 
-                // e.g., <img src="4000B1_001.jpg" />
-                source={{ html, baseUrl: mediaDir }}
+                source={{ html }}
                 style={styles.webview}
                 scrollEnabled={true}
                 showsVerticalScrollIndicator={false}
-
-                // Security & Access Props
-                allowFileAccess={true}
-                allowUniversalAccessFromFileURLs={true}
-                allowFileAccessFromFileURLs={true}
-
-                // iOS Specific: Permission to read the directory
-                allowingReadAccessToURL={mediaDir}
-
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
             />

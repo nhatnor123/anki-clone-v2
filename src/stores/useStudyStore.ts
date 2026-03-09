@@ -68,7 +68,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         const noteType = await NoteTypeRepository.getWithFieldsAndTemplates(note.note_type_id);
         if (!noteType) throw new Error('NoteType not found');
 
-        const { html, sounds } = TemplateRenderer.renderQuestion(card, note, noteType);
+        const { html, sounds } = await TemplateRenderer.renderQuestion(card, note, noteType);
 
         set({
             currentNote: note,
@@ -79,12 +79,12 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         });
     },
 
-    toggleAnswer: () => {
+    toggleAnswer: async () => {
         const { currentNote, currentNoteType, queue, currentIndex, showAnswer, currentHtml } = get();
         if (!currentNote || !currentNoteType || showAnswer) return;
 
         const card = queue[currentIndex];
-        const { html, sounds } = TemplateRenderer.renderAnswer(card, currentNote, currentNoteType, currentHtml);
+        const { html, sounds } = await TemplateRenderer.renderAnswer(card, currentNote, currentNoteType, currentHtml);
 
         set({
             showAnswer: true,
