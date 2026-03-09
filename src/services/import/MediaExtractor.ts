@@ -4,13 +4,14 @@ export class MediaExtractor {
   static async extractMedia(tempExtractedPath: string, targetMediaDirectory: string): Promise<void> {
     const mediaJsonPath = `${tempExtractedPath}/media`;
     const mediaJsonInfo = await FileSystem.getInfoAsync(mediaJsonPath);
-
+    console.log("mediaJsonPath", mediaJsonPath);
     if (!mediaJsonInfo.exists) return;
 
     const mediaJsonString = await FileSystem.readAsStringAsync(mediaJsonPath);
     const mediaMap: Record<string, string> = JSON.parse(mediaJsonString);
 
     const targetDirInfo = await FileSystem.getInfoAsync(targetMediaDirectory);
+    console.log("targetMediaDirectory", targetMediaDirectory);
     if (!targetDirInfo.exists) {
       await FileSystem.makeDirectoryAsync(targetMediaDirectory, { intermediates: true });
     }
@@ -24,6 +25,7 @@ export class MediaExtractor {
 
       const sourceInfo = await FileSystem.getInfoAsync(sourcePath);
       if (sourceInfo.exists) {
+        // console.log("copying ", sourcePath, "to", destPath);
         await FileSystem.copyAsync({ from: sourcePath, to: destPath });
       }
     }

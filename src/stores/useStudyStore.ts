@@ -97,14 +97,22 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         const { queue, currentIndex, deckId } = get();
         const card = queue[currentIndex];
 
+        if (!card) return;
+
         const { updatedCard, log } = SchedulerService.scheduleCard(card, rating);
 
         await CardRepository.updateAfterReview(updatedCard);
         await ReviewRepository.insert(log);
 
-        set({ currentIndex: currentIndex + 1 });
-        await get().nextCard();
+        const nextIndex = currentIndex + 1;
+        if (nextIndex >= queue.length) {
+            set({ currentIndex: nextIndex, isComplete: true, showAnswer: false });
+        } else {
+            set({ currentIndex: nextIndex, showAnswer: false });
+            await get().nextCard();
+        }
     },
+
 
     setShowAnswer: (show) => set({ showAnswer: show })
 }));

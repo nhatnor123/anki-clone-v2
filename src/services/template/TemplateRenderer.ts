@@ -4,7 +4,15 @@ import { NoteTypeWithFieldsAndTemplates } from '../../models/NoteType';
 import * as FileSystem from 'expo-file-system/legacy';
 
 export class TemplateRenderer {
-  private static mediaDir = `file://${FileSystem.documentDirectory}media/`;
+  private static getMediaDir(): string {
+    const docDir = FileSystem.documentDirectory || '';
+    // Ensure it ends with / but doesn't have double slashes
+    const baseDir = docDir.endsWith('/') ? docDir : `${docDir}/`;
+    return `${baseDir}media/`;
+  }
+
+  private static mediaDir = TemplateRenderer.getMediaDir();
+
 
   static renderQuestion(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates): { html: string; sounds: string[] } {
     const template = noteType.templates[card.template_ordinal];
@@ -26,19 +34,14 @@ export class TemplateRenderer {
     const sounds: string[] = [];
     const fieldValues = note.fields.split('\u001f');
 
-    // 0. Extract sound tags [sound:file.mp3]
-    html = html.replace(/\[sound:(.*?)\]/gi, (match, filename) => {
-      sounds.push(filename);
-      return ''; // Remove from HTML as we play via SoundService
-    });
+    console.log("ram html", html);
 
-    // 0. Special Anki Tags
+    // 1. Special Anki Tags
     html = html.replace(/\{\{Tags\}\}/gi, note.tags || '');
     html = html.replace(/\{\{Type\}\}/gi, noteType.name || '');
-    // For deck name, we'd need to pass it in, but for now just leave blank or use a placeholder
     html = html.replace(/\{\{Deck\}\}/gi, 'Deck');
 
-    // 1. Handle Conditional Blocks ({{#Field}}...{{/Field}} and {{^Field}}...{{/Field}})
+    // 2. Handle Conditional Blocks ({{#Field}}...{{/Field}} and {{^Field}}...{{/Field}})
     noteType.fields.forEach((field, index) => {
       const value = fieldValues[index] || '';
       const hasContent = value.trim().length > 0 && value.trim() !== '<br>' && value.trim() !== '<br />';
@@ -53,33 +56,40 @@ export class TemplateRenderer {
       html = html.replace(negRegex, hasContent ? '' : '$1');
     });
 
-    // 2. Replace field placeholders
+    // 3. Replace field placeholders
     noteType.fields.forEach((field, index) => {
       let value = fieldValues[index] || '';
 
       // Simple Cloze processing
-      // Anki uses different card types for clozes. Usually if the template HAS a cloze: tag, it's a cloze view.
       const isClozeTag = html.includes(`cloze:${field.name}`) || html.includes(`cloze:${field.name.toLowerCase()}`);
       if (card && isClozeTag) {
         value = this.processCloze(value, card.template_ordinal + 1);
       }
 
-      // Regex that matches {{FieldName}}, {{cloze:FieldName}}, {{type:cloze:FieldName}}, etc.
-      // Case-insensitive ('i' flag) to match Anki behavior.
       const escapedName = field.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`\\{\\{\\s*(?:[\\w\\:]+\\:)?${escapedName}\\s*\\}\\}`, 'gi');
       html = html.replace(regex, value);
     });
 
-    // 3. Resolve media paths (<img src="cat.jpg"> -> <img src="file:///.../media/cat.jpg">)
-    html = html.replace(/src="([^"]+)"/gi, (match, filename) => {
-      if (filename.startsWith('http') || filename.startsWith('data:')) return match;
-      const baseFilename = filename.split('/').pop();
-      return `src="${this.mediaDir}${baseFilename}"`;
+    // 4. Extract sound tags [sound:file.mp3] (Do this after fields are replaced)
+    html = html.replace(/\[sound:(.*?)\]/gi, (match, filename) => {
+      sounds.push(filename.trim());
+      return '';
     });
 
-    // 4. Remove any remaining unknown tags to avoid visual mess
+    // 5. Resolve media paths (<img src="cat.jpg"> or <img src='cat.jpg'>)
+    // For WebView with baseUrl, we use just the filename.
+    html = html.replace(/src=['"]([^'"]+)['"]/gi, (match, filename) => {
+      if (filename.startsWith('http') || filename.startsWith('data:')) return match;
+      const baseFilename = filename.split('/').pop();
+      return `src="${baseFilename}"`;
+    });
+
+
+    // 6. Remove any remaining unknown tags
     html = html.replace(/\{\{[^}]+\}\}/g, '');
+
+
 
     // 5. Wrap in styling
     const wrappedHtml = `

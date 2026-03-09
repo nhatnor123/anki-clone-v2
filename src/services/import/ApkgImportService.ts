@@ -12,7 +12,9 @@ export class ApkgImportService {
   constructor(private onProgress: (progress: number, message: string) => void) { }
 
   async import(uri: string): Promise<void> {
-    const tempDir = `${FileSystem.cacheDirectory}anki_import_${Date.now()}/`;
+    const tempDir = `${FileSystem.cacheDirectory}anki_import_${Date.now()}`;
+
+    console.log("tempDir", tempDir);
 
     try {
       // 1. Unzip .apkg (which is just a zip file)
@@ -30,7 +32,7 @@ export class ApkgImportService {
       for (const [filename, zipEntry] of Object.entries(content.files)) {
         if (zipEntry.dir) continue;
         const entryBase64 = await zipEntry.async('base64');
-        const outputPath = `${tempDir}${filename}`;
+        const outputPath = `${tempDir}/${filename}`;
         await FileSystem.writeAsStringAsync(outputPath, entryBase64, { encoding: FileSystem.EncodingType.Base64 });
         filePaths.push(outputPath);
 
@@ -40,11 +42,11 @@ export class ApkgImportService {
 
       // 2. Parse collection.anki2 or collection.anki21
       this.onProgress(35, 'Parsing Anki database...');
-      let dbPath = `${tempDir}collection.anki2`;
+      let dbPath = `${tempDir}/collection.anki2`;
       let dbInfo = await FileSystem.getInfoAsync(dbPath);
 
       if (!dbInfo.exists) {
-        dbPath = `${tempDir}collection.anki21`;
+        dbPath = `${tempDir}/collection.anki21`;
         dbInfo = await FileSystem.getInfoAsync(dbPath);
       }
 
@@ -56,8 +58,8 @@ export class ApkgImportService {
       }
 
       // Move to SQLite directory to open with expo-sqlite
-      const sqliteDir = `${FileSystem.documentDirectory}SQLite/`;
-      const importDbPath = `${sqliteDir}import_anki.db`;
+      const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
+      const importDbPath = `${sqliteDir}/import_anki.db`;
       const sqliteDirInfo = await FileSystem.getInfoAsync(sqliteDir);
       if (!sqliteDirInfo.exists) {
         await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });

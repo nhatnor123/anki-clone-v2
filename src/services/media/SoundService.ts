@@ -3,7 +3,14 @@ import * as FileSystem from 'expo-file-system/legacy';
 
 export class SoundService {
     private static sound: Audio.Sound | null = null;
-    private static mediaDir = `${FileSystem.documentDirectory}media/`;
+    private static getMediaDir(): string {
+        const docDir = FileSystem.documentDirectory || '';
+        const baseDir = docDir.endsWith('/') ? docDir : `${docDir}/`;
+        return `${baseDir}media/`;
+    }
+
+    private static mediaDir = SoundService.getMediaDir();
+
 
     static async play(filename: string): Promise<void> {
         try {

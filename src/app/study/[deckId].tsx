@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStudyStore } from '@/stores/useStudyStore';
 import { CardView } from '@/components/study/CardView';
@@ -9,7 +10,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
 import { SoundService } from '@/services/media/SoundService';
 
+
 export default function StudyScreen() {
+
     const { deckId } = useLocalSearchParams();
     const router = useRouter();
     const {
@@ -67,6 +70,8 @@ export default function StudyScreen() {
     }
 
     const card = queue[currentIndex];
+
+    console.log("currentHtml", currentHtml);
 
     return (
         <SafeAreaView style={styles.container}>

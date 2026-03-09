@@ -12,7 +12,9 @@ interface AnswerButtonsProps {
 }
 
 export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ card, onRate }) => {
+    if (!card) return null;
     const intervals = SchedulerService.getNextIntervals(card);
+
     const buttons = [
         { rating: Rating.Again, label: 'Again', color: Colors.again },
         { rating: Rating.Hard, label: 'Hard', color: Colors.hard },
