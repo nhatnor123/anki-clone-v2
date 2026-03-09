@@ -14,7 +14,7 @@ export class MediaExtractor {
     const targetDir = new Directory(targetMediaDirectory);
     console.log("targetMediaDirectory", targetDir.uri);
     if (!targetDir.exists) {
-      targetDir.create({ intermediates: true });
+      await targetDir.create({ intermediates: true });
     }
 
     for (const ObjectName in mediaMap) {
@@ -26,7 +26,11 @@ export class MediaExtractor {
 
       if (sourceFile.exists) {
         // console.log("copying ", sourceFile.uri, "to", destFile.uri);
-        sourceFile.copy(destFile);
+        // check if destFile.uri contain 4000B1_001
+        if (destFile.uri.includes("4000B1_001")) {
+          console.log("copying ", sourceFile.uri, "to", destFile.uri);
+        }
+        await sourceFile.copy(destFile);
       }
     }
   }

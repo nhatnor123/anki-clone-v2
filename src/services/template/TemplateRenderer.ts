@@ -78,18 +78,18 @@ export class TemplateRenderer {
     });
 
     // 5. Resolve media paths (<img src="cat.jpg"> or <img src='cat.jpg'>)
-    // For WebView with baseUrl, we use just the filename.
+    // Use absolute paths for direct file access
     html = html.replace(/src=['"]([^'"]+)['"]/gi, (match, filename) => {
       if (filename.startsWith('http') || filename.startsWith('data:')) return match;
       const baseFilename = filename.split('/').pop();
-      return `src="${baseFilename}"`;
+      return `src="${TemplateRenderer.mediaDir}${baseFilename}"`;
     });
 
 
     // 6. Remove any remaining unknown tags
     html = html.replace(/\{\{[^}]+\}\}/g, '');
 
-
+    console.log("transformed html", html);
 
     // 5. Wrap in styling
     const wrappedHtml = `

@@ -20,7 +20,7 @@ export class ApkgImportService {
       // 1. Unzip .apkg (which is just a zip file)
       this.onProgress(10, 'Unzipping .apkg file...');
       if (!tempDir.exists) {
-        tempDir.create({ intermediates: true });
+        await tempDir.create({ intermediates: true });
       }
 
       const zipFile = new File(uri);
@@ -35,8 +35,8 @@ export class ApkgImportService {
         if (zipEntry.dir) continue;
         const entryBase64 = await zipEntry.async('base64');
         const outputFile = new File(tempDir, filename);
-        outputFile.create({ overwrite: true });
-        outputFile.write(entryBase64, { encoding: 'base64' });
+        await outputFile.create({ overwrite: true });
+        await outputFile.write(entryBase64, { encoding: 'base64' });
 
         extractedCount++;
         this.onProgress(10 + Math.floor((extractedCount / totalFiles) * 20), `Extracting: ${filename}`);
