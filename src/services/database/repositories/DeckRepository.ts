@@ -29,7 +29,9 @@ export class DeckRepository {
 
   static async update(id: number, updates: Partial<Deck>): Promise<void> {
     const keys = Object.keys(updates);
-    if (keys.length === 0) return;
+    if (keys.length === 0) {
+      return;
+    }
 
     // Auto-update modified_at if not explicitly provided
     if (!updates.modified_at) {

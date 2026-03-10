@@ -16,9 +16,11 @@ export class SoundService {
             // Remove previous player
             if (this.player) {
                 this.player.removeListener('playbackStatusUpdate', this.onStatusUpdate);
-                // @ts-ignore - release might be remove() or release() depending on version
-                if (typeof this.player.release === 'function') this.player.release();
-                else if (typeof this.player.remove === 'function') this.player.remove();
+                if (typeof this.player.release === 'function') {
+                    this.player.release();
+                } else if (typeof this.player.remove === 'function') {
+                    this.player.remove();
+                }
                 this.player = null;
             }
 
@@ -42,9 +44,11 @@ export class SoundService {
     private static onStatusUpdate = (status: any) => {
         if (status.didJustFinish) {
             if (this.player) {
-                // @ts-ignore
-                if (typeof this.player.release === 'function') this.player.release();
-                else if (typeof this.player.remove === 'function') this.player.remove();
+                if (typeof this.player.release === 'function') {
+                    this.player.release();
+                } else if (typeof this.player.remove === 'function') {
+                    this.player.remove();
+                }
                 this.player = null;
             }
         }
@@ -54,8 +58,11 @@ export class SoundService {
         if (this.player) {
             this.player.pause();
             // @ts-ignore
-            if (typeof this.player.release === 'function') this.player.release();
-            else if (typeof this.player.remove === 'function') this.player.remove();
+            if (typeof this.player.release === 'function') {
+                this.player.release();
+            } else if (typeof this.player.remove === 'function') {
+                this.player.remove();
+            }
             this.player = null;
         }
     }

@@ -5,7 +5,9 @@ class DatabaseService {
     private db: SQLite.SQLiteDatabase | null = null;
 
     async initialize() {
-        if (this.db) return;
+        if (this.db) {
+            return;
+        }
 
         this.db = await SQLite.openDatabaseAsync('ankiclone.db');
 
@@ -18,7 +20,9 @@ class DatabaseService {
     }
 
     private async runMigrations() {
-        if (!this.db) throw new Error('DB not initialized');
+        if (!this.db) {
+            throw new Error('DB not initialized');
+        }
 
         try {
             const result = await this.db.getFirstAsync<{ version: number }>(
@@ -34,7 +38,9 @@ class DatabaseService {
     }
 
     getDb(): SQLite.SQLiteDatabase {
-        if (!this.db) throw new Error('Database not initialized');
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
         return this.db;
     }
 

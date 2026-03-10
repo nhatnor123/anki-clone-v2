@@ -63,10 +63,14 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
         const card = queue[currentIndex];
         const note = await NoteRepository.getById(card.note_id);
-        if (!note) throw new Error('Note not found');
+        if (!note) {
+            throw new Error('Note not found');
+        }
 
         const noteType = await NoteTypeRepository.getWithFieldsAndTemplates(note.note_type_id);
-        if (!noteType) throw new Error('NoteType not found');
+        if (!noteType) {
+            throw new Error('NoteType not found');
+        }
 
         const { html, sounds } = await TemplateRenderer.renderQuestion(card, note, noteType);
 
@@ -81,7 +85,9 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
     toggleAnswer: async () => {
         const { currentNote, currentNoteType, queue, currentIndex, showAnswer, currentHtml } = get();
-        if (!currentNote || !currentNoteType || showAnswer) return;
+        if (!currentNote || !currentNoteType || showAnswer) {
+            return;
+        }
 
         const card = queue[currentIndex];
         const { html, sounds } = await TemplateRenderer.renderAnswer(card, currentNote, currentNoteType, currentHtml);
@@ -97,7 +103,9 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         const { queue, currentIndex, deckId } = get();
         const card = queue[currentIndex];
 
-        if (!card) return;
+        if (!card) {
+            return;
+        }
 
         const { updatedCard, log } = SchedulerService.scheduleCard(card, rating);
 

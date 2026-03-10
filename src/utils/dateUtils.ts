@@ -13,8 +13,14 @@ export const epochDaysToDate = (days: number): Date => {
 };
 
 export const formatInterval = (days: number): string => {
-    if (days < 1) return '< 1d';
-    if (days < 30) return `${Math.round(days)}d`;
-    if (days < 365) return `${(days / 30).toFixed(1)}mo`;
+    if (days < 1) {
+        return '< 1d';
+    }
+    if (days < 30) {
+        return `${Math.round(days)}d`;
+    }
+    if (days < 365) {
+        return `${(days / 30).toFixed(1)}mo`;
+    }
     return `${(days / 365).toFixed(1)}yr`;
 };

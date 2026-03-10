@@ -21,7 +21,9 @@ export class AnkiDatabaseParser {
 
         try {
             const collectionRow = await this.db.getFirstAsync<{ models: string, decks: string }>('SELECT models, decks FROM col LIMIT 1');
-            if (!collectionRow) throw new Error('Invalid Anki database: Missing col table');
+            if (!collectionRow) {
+                throw new Error('Invalid Anki database: Missing col table');
+            }
 
             const modelsJson = JSON.parse(collectionRow.models);
             const decksJson = JSON.parse(collectionRow.decks);
@@ -96,7 +98,9 @@ export class AnkiDatabaseParser {
         for (const [idStr, deck] of Object.entries(decksJson)) {
             const id = parseInt(idStr, 10);
             // Skip the default deck if it's the root 'Default' (id 1)
-            if (id === 1 && deck.name === 'Default') continue;
+            if (id === 1 && deck.name === 'Default') {
+                continue;
+            }
 
             decks.push({
                 id,

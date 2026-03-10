@@ -29,8 +29,12 @@ export class SchedulerService {
     const schedulingCards = this.f.repeat(fsrsCard, now);
 
     const format = (days: number) => {
-      if (days < 1) return '< 1d';
-      if (days < 30) return `${Math.round(days)}d`;
+      if (days < 1) {
+        return '< 1d';
+      }
+      if (days < 30) {
+        return `${Math.round(days)}d`;
+      }
       return `${(days / 30).toFixed(1)}mo`;
     };
 

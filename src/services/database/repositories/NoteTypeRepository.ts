@@ -57,7 +57,9 @@ export class NoteTypeRepository {
 
   static async getWithFieldsAndTemplates(id: number): Promise<NoteTypeWithFieldsAndTemplates | null> {
     const type = await this.getById(id);
-    if (!type) return null;
+    if (!type) {
+      return null;
+    }
 
     const fields = await dbService.query<FieldDef>('SELECT * FROM field_defs WHERE note_type_id = ? ORDER BY ordinal ASC', [id]);
     const templates = await dbService.query<CardTemplate>('SELECT * FROM card_templates WHERE note_type_id = ? ORDER BY ordinal ASC', [id]);

@@ -46,10 +46,15 @@ export class TemplateRenderer {
 
       const extension = baseFilename.split('.').pop()?.toLowerCase();
       let mimeType = 'image/jpeg';
-      if (extension === 'png') mimeType = 'image/png';
-      else if (extension === 'gif') mimeType = 'image/gif';
-      else if (extension === 'svg') mimeType = 'image/svg+xml';
-      else if (extension === 'webp') mimeType = 'image/webp';
+      if (extension === 'png') {
+        mimeType = 'image/png';
+      } else if (extension === 'gif') {
+        mimeType = 'image/gif';
+      } else if (extension === 'svg') {
+        mimeType = 'image/svg+xml';
+      } else if (extension === 'webp') {
+        mimeType = 'image/webp';
+      }
 
       return `data:${mimeType};base64,${base64}`;
     } catch (error) {

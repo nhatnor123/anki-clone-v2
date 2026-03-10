@@ -6,7 +6,9 @@ export class MediaExtractor {
     const mediaJsonFile = new File(tempDir, 'media');
 
     console.log("mediaJsonPath", mediaJsonFile.uri);
-    if (!mediaJsonFile.exists) return;
+    if (!mediaJsonFile.exists) {
+      return;
+    }
 
     const mediaJsonString = await mediaJsonFile.text();
     const mediaMap: Record<string, string> = JSON.parse(mediaJsonString);
@@ -18,7 +20,9 @@ export class MediaExtractor {
     }
 
     for (const ObjectName in mediaMap) {
-      if (!mediaMap.hasOwnProperty(ObjectName)) continue;
+      if (!mediaMap.hasOwnProperty(ObjectName)) {
+        continue;
+      }
 
       const realFilename = mediaMap[ObjectName];
       const sourceFile = new File(tempDir, ObjectName);

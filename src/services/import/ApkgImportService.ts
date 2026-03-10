@@ -32,7 +32,9 @@ export class ApkgImportService {
       let extractedCount = 0;
 
       for (const [filename, zipEntry] of Object.entries(content.files)) {
-        if (zipEntry.dir) continue;
+        if (zipEntry.dir) {
+          continue;
+        }
         const entryBase64 = await zipEntry.async('base64');
         const outputFile = new File(tempDir, filename);
         await outputFile.create({ overwrite: true });
