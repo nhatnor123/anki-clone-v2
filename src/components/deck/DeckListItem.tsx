@@ -10,12 +10,51 @@ interface DeckListItemProps {
         reviewCount: number;
     };
     onPress: () => void;
+    showGroupIcon?: boolean;
+    isSubItem?: boolean;
+    isExpanded?: boolean;
+    hasChildren?: boolean;
 }
 
-export const DeckListItem: React.FC<DeckListItemProps> = ({ name, counts, onPress }) => {
+import { Ionicons } from '@expo/vector-icons';
+import { AnimatedPressable } from '../common/AnimatedPressable';
+
+export const DeckListItem: React.FC<DeckListItemProps> = ({
+    name,
+    counts,
+    onPress,
+    showGroupIcon,
+    isSubItem,
+    isExpanded,
+    hasChildren
+}) => {
     return (
-        <Pressable style={styles.container} onPress={onPress}>
-            <Text style={styles.name} numberOfLines={1}>{name}</Text>
+        <AnimatedPressable
+            style={[
+                styles.container,
+                isSubItem && styles.subItemContainer
+            ]}
+            onPress={onPress}
+        >
+            <View style={styles.nameContainer}>
+                {hasChildren && (
+                    <Ionicons
+                        name={isExpanded ? "chevron-down" : "chevron-forward"}
+                        size={18}
+                        color={Colors.textSecondary}
+                        style={styles.chevron}
+                    />
+                )}
+                {showGroupIcon && (
+                    <Ionicons
+                        name="folder-outline"
+                        size={20}
+                        color={Colors.primary}
+                        style={styles.groupIcon}
+                    />
+                )}
+                <Text style={styles.name}>{name}</Text>
+            </View>
 
             <View style={styles.countsContainer}>
                 <View style={[styles.badge, { backgroundColor: Colors.newCount }]}>
@@ -28,7 +67,7 @@ export const DeckListItem: React.FC<DeckListItemProps> = ({ name, counts, onPres
                     <Text style={styles.badgeText}>{counts.reviewCount}</Text>
                 </View>
             </View>
-        </Pressable>
+        </AnimatedPressable>
     );
 };
 
@@ -43,12 +82,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
     },
-    name: {
-        fontSize: 18,
-        fontWeight: '500',
-        color: '#1f2937',
+    nameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         flex: 1,
         marginRight: 12,
+    },
+    groupIcon: {
+        marginRight: 8,
+    },
+    chevron: {
+        marginRight: 4,
+    },
+    subItemContainer: {
+        paddingLeft: 44,
+    },
+    name: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#1f2937',
     },
     countsContainer: {
         flexDirection: 'row',

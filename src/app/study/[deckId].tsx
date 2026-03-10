@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
 import { SoundService } from '@/services/media/SoundService';
 
+import { AnimatedPressable } from '@/components/common/AnimatedPressable';
 
 export default function StudyScreen() {
 
@@ -54,9 +55,9 @@ export default function StudyScreen() {
                 <Ionicons name="checkmark-circle" size={80} color="#10b981" />
                 <Text style={styles.completeTitle}>Congratulations!</Text>
                 <Text style={styles.completeSubtitle}>You have finished this deck for today.</Text>
-                <Pressable style={styles.homeButton} onPress={() => router.replace('/(tabs)')}>
+                <AnimatedPressable style={styles.homeButton} onPress={() => router.replace('/(tabs)')}>
                     <Text style={styles.homeButtonText}>Back to Decks</Text>
-                </Pressable>
+                </AnimatedPressable>
             </View>
         );
     }
@@ -71,15 +72,15 @@ export default function StudyScreen() {
 
     const card = queue[currentIndex];
 
-    console.log("currentHtml", currentHtml);
+    // console.log("currentHtml", currentHtml);
 
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Pressable onPress={() => router.back()} style={styles.closeButton}>
+                <AnimatedPressable onPress={() => router.back()} style={styles.closeButton}>
                     <Ionicons name="close" size={28} color={Colors.text} />
-                </Pressable>
+                </AnimatedPressable>
                 <CardCounter
                     newCount={queue.filter((c, i) => i >= currentIndex && c.queue === 0).length}
                     learningCount={queue.filter((c, i) => i >= currentIndex && c.queue === 1).length}
@@ -96,9 +97,9 @@ export default function StudyScreen() {
             {/* Actions */}
             <View style={styles.footer}>
                 {!showAnswer ? (
-                    <Pressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
+                    <AnimatedPressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
                         <Text style={styles.showAnswerText}>Show Answer</Text>
-                    </Pressable>
+                    </AnimatedPressable>
                 ) : (
                     <AnswerButtons card={card} onRate={submitRating} />
                 )}

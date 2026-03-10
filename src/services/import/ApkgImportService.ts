@@ -14,7 +14,7 @@ export class ApkgImportService {
   async import(uri: string): Promise<void> {
     const tempDir = new Directory(Paths.cache, `anki_import_${Date.now()}`);
 
-    console.log("tempDir", tempDir.uri);
+    // console.log("tempDir", tempDir.uri);
 
     try {
       // 1. Unzip .apkg (which is just a zip file)
@@ -76,6 +76,8 @@ export class ApkgImportService {
 
       const parser = new AnkiDatabaseParser('import_anki.db');
       const data = await parser.parse();
+
+      // console.log("data after parsing", data);
 
       // Cleanup: Delete the imported db from SQLite folder
       if (importDbFile.exists) {

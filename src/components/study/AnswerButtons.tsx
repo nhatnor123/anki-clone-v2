@@ -10,6 +10,7 @@ interface AnswerButtonsProps {
     card: Card;
     onRate: (rating: Rating) => void;
 }
+import { AnimatedPressable } from '../common/AnimatedPressable';
 
 export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ card, onRate }) => {
     if (!card) {
@@ -27,14 +28,14 @@ export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ card, onRate }) =>
     return (
         <View style={styles.container}>
             {buttons.map((btn) => (
-                <Pressable
+                <AnimatedPressable
                     key={btn.rating}
                     style={[styles.button, { backgroundColor: btn.color }]}
                     onPress={() => onRate(btn.rating)}
                 >
                     <Text style={styles.buttonText}>{btn.label}</Text>
                     <Text style={styles.intervalText}>{intervals[btn.rating]}</Text>
-                </Pressable>
+                </AnimatedPressable>
             ))}
         </View>
     );

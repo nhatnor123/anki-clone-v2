@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { dbService } from '@/services/database/DatabaseService';
 import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
@@ -29,30 +30,47 @@ export default function RootLayout() {
     }
 
     return (
-        <Tabs screenOptions={{ tabBarActiveTintColor: '#3b82f6' }}>
+        <Tabs
+            screenOptions={{
+                tabBarActiveTintColor: '#3b82f6',
+                tabBarInactiveTintColor: '#6b7280',
+            }}
+        >
             <Tabs.Screen
                 name="(tabs)/index"
                 options={{
                     title: 'Decks',
                     headerShown: true,
+                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                        <Ionicons name="layers" size={size} color={color} />
+                    ),
                 }}
             />
             <Tabs.Screen
                 name="(tabs)/browser"
                 options={{
                     title: 'Browser',
+                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                        <Ionicons name="search" size={size} color={color} />
+                    ),
                 }}
             />
             <Tabs.Screen
                 name="(tabs)/stats"
                 options={{
                     title: 'Stats',
+                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                        <Ionicons name="stats-chart" size={size} color={color} />
+                    ),
                 }}
             />
             <Tabs.Screen
                 name="(tabs)/settings"
                 options={{
                     title: 'Settings',
+                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                        <Ionicons name="settings" size={size} color={color} />
+                    ),
                 }}
             />
             <Tabs.Screen

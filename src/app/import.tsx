@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useDeckStore } from '@/stores/useDeckStore';
 import { useImportStore } from '@/stores/useImportStore';
 import { ApkgImportService } from '@/services/import/ApkgImportService';
 import { useRouter } from 'expo-router';
+import { AnimatedPressable } from '@/components/common/AnimatedPressable';
 
 export default function ImportScreen() {
     const router = useRouter();
@@ -54,9 +55,9 @@ export default function ImportScreen() {
             <Text style={styles.subtitle}>Select an .apkg file exported from Anki</Text>
 
             {status === 'idle' || status === 'error' || status === 'success' ? (
-                <Pressable style={styles.button} onPress={handleImport}>
+                <AnimatedPressable style={styles.button} onPress={handleImport}>
                     <Text style={styles.buttonText}>Select .apkg File</Text>
-                </Pressable>
+                </AnimatedPressable>
             ) : null}
 
             {status !== 'idle' && (
