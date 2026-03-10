@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, FlatList, StyleSheet, Text, Pressable } from 'react-native';
 import { useDeckStore } from '@/stores/useDeckStore';
 import { DeckListItem } from '@/components/deck/DeckListItem';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,9 +10,14 @@ export default function DeckListScreen() {
     const router = useRouter();
     const { decks, counts, isLoading, loadDecks } = useDeckStore();
 
-    useEffect(() => {
-        loadDecks();
-    }, [loadDecks]);
+    console.log("desks", decks);
+
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadDecks();
+        }, [loadDecks])
+    );
 
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
