@@ -57,10 +57,10 @@ export class DeckRepository {
     const row = await dbService.queryFirst<{ newCount: number, learningCount: number, reviewCount: number }>(
       `SELECT 
         SUM(CASE WHEN queue = 0 THEN 1 ELSE 0 END) as newCount,
-        SUM(CASE WHEN queue = 1 AND due <= ? THEN 1 ELSE 0 END) as learningCount,
+        SUM(CASE WHEN queue = 1 THEN 1 ELSE 0 END) as learningCount,
         SUM(CASE WHEN queue = 2 AND due <= ? THEN 1 ELSE 0 END) as reviewCount
        FROM cards WHERE deck_id = ?`,
-      [Date.now(), todayEpochDay, deckId]
+      [todayEpochDay, deckId]
     );
 
     return {

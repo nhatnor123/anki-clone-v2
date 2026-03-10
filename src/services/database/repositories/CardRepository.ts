@@ -51,10 +51,10 @@ export class CardRepository {
   }
 
   static async getQueueForDeck(deckId: number, limits: { new: number, review: number }, todayEpochDay: number): Promise<Card[]> {
-    // Learning cards due now (time based)
+    // Learning cards (all of them should be finished in the session)
     const learning = await dbService.query<Card>(
-      'SELECT * FROM cards WHERE deck_id = ? AND queue = 1 AND due <= ? ORDER BY due ASC',
-      [deckId, Date.now()]
+      'SELECT * FROM cards WHERE deck_id = ? AND queue = 1 ORDER BY due ASC',
+      [deckId]
     );
 
     // Review cards due today (day based)
@@ -70,5 +70,15 @@ export class CardRepository {
     );
 
     return [...learning, ...review, ...newCards];
+  }
+
+  static async resetDeckProgress(deckId: number): Promise<void> {
+    await dbService.execute(
+      `UPDATE cards SET 
+        type = 0, queue = 0, due = ?, interval_days = 0, 
+        ease_factor = 2500, reps = 0, lapses = 0, modified_at = ?
+       WHERE deck_id = ?`,
+      [Date.now(), Date.now(), deckId]
+    );
   }
 }

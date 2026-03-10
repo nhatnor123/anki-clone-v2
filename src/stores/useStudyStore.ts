@@ -26,6 +26,7 @@ interface StudyState {
     submitRating: (rating: Rating) => Promise<void>;
     toggleAnswer: () => void;
     setShowAnswer: (show: boolean) => void;
+    resetDeckProgress: () => Promise<void>;
 }
 
 export const useStudyStore = create<StudyState>((set, get) => ({
@@ -103,7 +104,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         const { queue, currentIndex, deckId } = get();
         const card = queue[currentIndex];
 
-        if (!card) {
+        if (!card || deckId === null) {
             return;
         }
 
@@ -112,15 +113,38 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         await CardRepository.updateAfterReview(updatedCard);
         await ReviewRepository.insert(log);
 
+        let nextQueue = [...queue];
+        if (rating === Rating.Again) {
+            // Re-queue the updated card at the end of the current session
+            nextQueue.push(updatedCard);
+        }
+
         const nextIndex = currentIndex + 1;
-        if (nextIndex >= queue.length) {
-            set({ currentIndex: nextIndex, isComplete: true, showAnswer: false });
+        if (nextIndex >= nextQueue.length) {
+            // Current pass finished, check if there are more cards due in the entire deck
+            const todayEpochDay = Math.floor(Date.now() / 86400000);
+            const moreCards = await CardRepository.getQueueForDeck(deckId, { new: 1, review: 1 }, todayEpochDay);
+
+            if (moreCards.length === 0) {
+                set({ queue: nextQueue, currentIndex: nextIndex, isComplete: true, showAnswer: false });
+            } else {
+                // Load the next batch/remaining cards
+                await get().loadQueue(deckId);
+            }
         } else {
-            set({ currentIndex: nextIndex, showAnswer: false });
+            set({ queue: nextQueue, currentIndex: nextIndex, showAnswer: false });
             await get().nextCard();
         }
     },
 
 
-    setShowAnswer: (show) => set({ showAnswer: show })
+    setShowAnswer: (show) => set({ showAnswer: show }),
+
+    resetDeckProgress: async () => {
+        const { deckId } = get();
+        if (deckId === null) return;
+
+        await CardRepository.resetDeckProgress(deckId);
+        await get().loadQueue(deckId);
+    }
 }));

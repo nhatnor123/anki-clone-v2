@@ -25,7 +25,8 @@ export default function StudyScreen() {
         isComplete,
         loadQueue,
         toggleAnswer,
-        submitRating
+        submitRating,
+        resetDeckProgress
     } = useStudyStore();
 
     useEffect(() => {
@@ -55,6 +56,10 @@ export default function StudyScreen() {
                 <Ionicons name="checkmark-circle" size={80} color="#10b981" />
                 <Text style={styles.completeTitle}>Congratulations!</Text>
                 <Text style={styles.completeSubtitle}>You have finished this deck for today.</Text>
+                <AnimatedPressable style={styles.relearnButton} onPress={resetDeckProgress}>
+                    <Ionicons name="refresh" size={20} color="#ffffff" style={{ marginRight: 8 }} />
+                    <Text style={styles.homeButtonText}>Re-learn this Deck</Text>
+                </AnimatedPressable>
                 <AnimatedPressable style={styles.homeButton} onPress={() => router.replace('/(tabs)')}>
                     <Text style={styles.homeButtonText}>Back to Decks</Text>
                 </AnimatedPressable>
@@ -101,7 +106,18 @@ export default function StudyScreen() {
                         <Text style={styles.showAnswerText}>Show Answer</Text>
                     </AnimatedPressable>
                 ) : (
-                    <AnswerButtons card={card} onRate={submitRating} />
+                    <View style={styles.answerActionsContainer}>
+                        {currentSounds.length > 0 && (
+                            <AnimatedPressable
+                                style={styles.playSoundButton}
+                                onPress={() => SoundService.play(currentSounds[0])}
+                            >
+                                <Ionicons name="volume-medium-outline" size={24} color={Colors.primary} />
+                                <Text style={styles.playSoundText}>Play Sound</Text>
+                            </AnimatedPressable>
+                        )}
+                        <AnswerButtons card={card} onRate={submitRating} />
+                    </View>
                 )}
             </View>
         </SafeAreaView>
@@ -183,5 +199,42 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    relearnButton: {
+        backgroundColor: '#6366f1', // Indigo color for distinct action
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        borderRadius: 10,
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    answerActionsContainer: {
+        paddingBottom: 8,
+    },
+    playSoundButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        backgroundColor: '#f3f4f6', // Light gray background
+        borderRadius: 100, // Pill shape
+        alignSelf: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+        elevation: 2, // Shadow for Android
+        shadowColor: '#000', // Shadow for iOS
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    playSoundText: {
+        marginLeft: 8,
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: Colors.primary,
     },
 });
