@@ -256,7 +256,7 @@ export default function StudyScreen() {
                                     style={styles.playSoundButton}
                                     onPress={() => SoundService.play(currentSounds[0])}
                                 >
-                                    <Ionicons name="volume-medium-outline" size={24} color={Colors.primary} />
+                                    <Ionicons name="volume-medium-outline" size={20} color={Colors.primary} />
                                     <Text style={styles.playSoundText}>Play Sound</Text>
                                 </AnimatedPressable>
                             )}
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 8,
     },
     closeButton: {
         padding: 4,
@@ -307,17 +307,17 @@ const styles = StyleSheet.create({
     },
     cardContainer: {
         flex: 1,
-        paddingHorizontal: 16,
-        paddingBottom: 16,
+        paddingHorizontal: 8,
+        paddingBottom: 8,
     },
     footer: {
         backgroundColor: '#ffffff',
     },
     showAnswerButton: {
-        margin: 16,
-        marginBottom: 24,
+        margin: 8,
+        marginBottom: 0,
         backgroundColor: Colors.primary,
-        paddingVertical: 16,
+        paddingVertical: 14,
         borderRadius: 12,
         alignItems: 'center',
     },
@@ -367,18 +367,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     answerActionsContainer: {
-        paddingBottom: 8,
+        paddingBottom: 0,
     },
     playSoundButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
         backgroundColor: '#f3f4f6', // Light gray background
         borderRadius: 100, // Pill shape
         alignSelf: 'center',
-        marginBottom: 20,
+        marginBottom: 8,
         borderWidth: 1,
         borderColor: '#e5e7eb',
         elevation: 2, // Shadow for Android
@@ -388,8 +388,8 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
     },
     playSoundText: {
-        marginLeft: 8,
-        fontSize: 16,
+        marginLeft: 6,
+        fontSize: 14,
         fontWeight: 'bold',
         color: Colors.primary,
     },

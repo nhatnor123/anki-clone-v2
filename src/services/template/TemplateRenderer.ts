@@ -16,12 +16,12 @@ export class TemplateRenderer {
 
   static async renderQuestion(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates): Promise<{ html: string; sounds: string[] }> {
     const template = noteType.templates[card.template_ordinal];
-    return await this.render(template.question_format, note, noteType, card);
+    return await this.render(template.question_format, note, noteType, card, false);
   }
 
   static async renderAnswer(card: Card, note: Note, noteType: NoteTypeWithFieldsAndTemplates, questionHtml: string): Promise<{ html: string; sounds: string[] }> {
     const template = noteType.templates[card.template_ordinal];
-    const { html: answerHtml, sounds } = await this.render(template.answer_format, note, noteType, card);
+    const { html: answerHtml, sounds } = await this.render(template.answer_format, note, noteType, card, true);
 
     // Replace {{FrontSide}} with the question content
     const html = answerHtml.replace(/\{\{FrontSide\}\}/g, questionHtml);
@@ -63,7 +63,7 @@ export class TemplateRenderer {
     }
   }
 
-  private static async render(template: string, note: Note, noteType: NoteTypeWithFieldsAndTemplates, card?: Card): Promise<{ html: string; sounds: string[] }> {
+  private static async render(template: string, note: Note, noteType: NoteTypeWithFieldsAndTemplates, card?: Card, isAnswer: boolean = false): Promise<{ html: string; sounds: string[] }> {
     let html = template;
     const sounds: string[] = [];
     const fieldValues = note.fields.split('\u001f');
@@ -95,7 +95,9 @@ export class TemplateRenderer {
       // Simple Cloze processing
       const isClozeTag = html.includes(`cloze:${field.name}`) || html.includes(`cloze:${field.name.toLowerCase()}`);
       if (card && isClozeTag) {
-        value = this.processCloze(value, card.template_ordinal + 1);
+        value = this.processCloze(value, card.template_ordinal + 1, isAnswer);
+      } else {
+        value = this.stripClozeTags(value);
       }
 
       const escapedName = field.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -146,13 +148,14 @@ export class TemplateRenderer {
               flex-direction: column; 
               align-items: center; 
               justify-content: center; 
-              padding: 20px;
+              padding: 12px;
               color: #1f2937;
               background-color: #ffffff;
               text-align: center;
               line-height: 1.5;
+              font-size: 19px;
             }
-            img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
+            img { max-width: 100%; height: auto; border-radius: 8px; margin: 8px 0; }
             .card { width: 100%; }
             .cloze { color: #3b82f6; font-weight: bold; }
             ${noteType.css}
@@ -166,11 +169,19 @@ export class TemplateRenderer {
 
     return { html: wrappedHtml, sounds };
   }
-  private static processCloze(content: string, ordinal: number): string {
+  private static stripClozeTags(content: string): string {
+    const regex = /\{\{c\d+::(.*?)(?:::(.*?))?\}\}/g;
+    return content.replace(regex, '$1');
+  }
+
+  private static processCloze(content: string, ordinal: number, isAnswer: boolean = false): string {
     const regex = /\{\{c(\d+)::(.*?)(?:::(.*?))?\}\}/g;
     return content.replace(regex, (match, cNum, text, hint) => {
       const isTarget = parseInt(cNum, 10) === ordinal;
       if (isTarget) {
+        if (isAnswer) {
+          return `<span class="cloze">${text}</span>`;
+        }
         return `<span class="cloze">[${hint || '...'}]</span>`;
       } else {
         return text;
