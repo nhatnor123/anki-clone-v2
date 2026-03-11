@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, TextInput, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, TextInput, Animated, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStudyStore } from '@/stores/useStudyStore';
@@ -52,6 +52,14 @@ export default function StudyScreen() {
         }
     }, [currentSounds]);
 
+    // Reset keyword state when card changes
+    const currentCardId = queue[currentIndex]?.id;
+    useEffect(() => {
+        // console.log('Resetting keyword state for card:', currentIndex, currentCardId);
+        setKeywordInput('');
+        setIsKeywordCorrect(null);
+    }, [currentIndex, currentCardId]);
+
     const handleShowAnswer = () => {
         setIsKeywordCorrect(null);
         setKeywordInput('');
@@ -96,6 +104,24 @@ export default function StudyScreen() {
         }
     };
 
+    const handleResetPress = () => {
+        Alert.alert(
+            "Reset Deck Progress",
+            "Are you sure you want to reset all cards in this deck to 'New'? This will clear your current learning progress.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Reset Everything", 
+                    style: "destructive",
+                    onPress: async () => {
+                        await resetDeckProgress();
+                        // Additional feedback if needed
+                    }
+                }
+            ]
+        );
+    };
+
     if (isComplete) {
         return (
             <View style={styles.completeContainer}>
@@ -137,7 +163,12 @@ export default function StudyScreen() {
                     learningCount={queue.filter((c, i) => i >= currentIndex && c.queue === 1).length}
                     reviewCount={queue.filter((c, i) => i >= currentIndex && c.queue === 2).length}
                 />
-                <Text style={styles.counterText}>{currentIndex + 1} / {queue.length}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <AnimatedPressable onPress={handleResetPress} style={styles.headerResetButton}>
+                        <Ionicons name="refresh" size={22} color="#ffffff" />
+                    </AnimatedPressable>
+                    <Text style={styles.counterText}>{currentIndex + 1} / {queue.length}</Text>
+                </View>
             </View>
 
             <KeyboardAvoidingView
@@ -262,6 +293,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: Colors.textSecondary,
+    },
+    headerResetButton: {
+        backgroundColor: '#6366f1', // Indigo to match relearn button
+        padding: 8,
+        borderRadius: 10,
+        marginRight: 12,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
     },
     cardContainer: {
         flex: 1,
