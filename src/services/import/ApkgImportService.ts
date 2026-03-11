@@ -77,7 +77,7 @@ export class ApkgImportService {
       const parser = new AnkiDatabaseParser('import_anki.db');
       const data = await parser.parse();
 
-      // console.log("data after parsing", data);
+      console.log("data after parsing", data);
 
       // Cleanup: Delete the imported db from SQLite folder
       if (importDbFile.exists) {
@@ -138,6 +138,7 @@ export class ApkgImportService {
           note_type_id: n.mid, // Anki's model id
           guid: n.guid,
           fields: n.flds,
+          sfld: n.sfld || '',
           tags: n.tags,
           checksum: n.csum || 0,
           created_at: n.crt || Date.now()

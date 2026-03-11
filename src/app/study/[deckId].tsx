@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, TextInput, Animated, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStudyStore } from '@/stores/useStudyStore';
@@ -19,6 +19,7 @@ export default function StudyScreen() {
     const {
         queue,
         currentIndex,
+        currentNote,
         currentHtml,
         currentSounds,
         showAnswer,
@@ -28,6 +29,11 @@ export default function StudyScreen() {
         submitRating,
         resetDeckProgress
     } = useStudyStore();
+    const [keywordInput, setKeywordInput] = useState('');
+    const [isKeywordCorrect, setIsKeywordCorrect] = useState<boolean | null>(null);
+    const shakeAnim = useRef(new Animated.Value(0)).current;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
     useEffect(() => {
         if (deckId) {
@@ -47,7 +53,47 @@ export default function StudyScreen() {
     }, [currentSounds]);
 
     const handleShowAnswer = () => {
+        setIsKeywordCorrect(null);
+        setKeywordInput('');
         toggleAnswer();
+    };
+
+    const checkKeyword = () => {
+        const correctKeyword = currentNote?.sfld?.trim().toLowerCase();
+        const userInput = keywordInput.trim().toLowerCase();
+
+        if (userInput === correctKeyword) {
+            setIsKeywordCorrect(true);
+            fadeAnim.setValue(0);
+            scaleAnim.setValue(0.8);
+            Animated.parallel([
+                Animated.timing(fadeAnim, {
+                    toValue: 1,
+                    duration: 400,
+                    useNativeDriver: true,
+                }),
+                Animated.spring(scaleAnim, {
+                    toValue: 1,
+                    friction: 4,
+                    useNativeDriver: true,
+                })
+            ]).start();
+            
+            // Show answer immediately
+            toggleAnswer();
+        } else {
+            setIsKeywordCorrect(false);
+            // Vigorous Shake animation
+            shakeAnim.setValue(0);
+            Animated.sequence([
+                Animated.timing(shakeAnim, { toValue: 15, duration: 40, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: -15, duration: 40, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 12, duration: 40, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: -12, duration: 40, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 8, duration: 40, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 0, duration: 40, useNativeDriver: true }),
+            ]).start();
+        }
     };
 
     if (isComplete) {
@@ -94,32 +140,100 @@ export default function StudyScreen() {
                 <Text style={styles.counterText}>{currentIndex + 1} / {queue.length}</Text>
             </View>
 
-            {/* Card Content */}
-            <View style={styles.cardContainer}>
-                <CardView html={currentHtml} />
-            </View>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                {/* Card Content */}
+                <View style={styles.cardContainer}>
+                    <CardView html={currentHtml} />
 
-            {/* Actions */}
-            <View style={styles.footer}>
-                {!showAnswer ? (
-                    <AnimatedPressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
-                        <Text style={styles.showAnswerText}>Show Answer</Text>
-                    </AnimatedPressable>
-                ) : (
-                    <View style={styles.answerActionsContainer}>
-                        {currentSounds.length > 0 && (
-                            <AnimatedPressable
-                                style={styles.playSoundButton}
-                                onPress={() => SoundService.play(currentSounds[0])}
+                    {!showAnswer && (
+                        <Animated.View style={[
+                            styles.inputWrapper,
+                            isKeywordCorrect === false && styles.inputWrapperError,
+                            isKeywordCorrect === true && styles.inputWrapperSuccess,
+                            { transform: [{ translateX: shakeAnim }] }
+                        ]}>
+                            <TextInput
+                                style={[
+                                    styles.keywordInput,
+                                    isKeywordCorrect === false && styles.inputError,
+                                    isKeywordCorrect === true && styles.inputSuccess,
+                                ]}
+                                placeholder="Type keyword to check..."
+                                value={keywordInput}
+                                onChangeText={(text) => {
+                                    setKeywordInput(text);
+                                    if (isKeywordCorrect !== null) setIsKeywordCorrect(null);
+                                }}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                onSubmitEditing={checkKeyword}
+                            />
+                            {keywordInput.length > 0 && (
+                                <Pressable 
+                                    style={styles.clearButton} 
+                                    onPress={() => {
+                                        setKeywordInput('');
+                                        setIsKeywordCorrect(null);
+                                    }}
+                                >
+                                    <Ionicons name="close-circle" size={20} color={Colors.textSecondary} />
+                                </Pressable>
+                            )}
+                            <Pressable 
+                                style={[
+                                    styles.checkButton,
+                                    !keywordInput.trim() && styles.checkButtonDisabled
+                                ]} 
+                                onPress={checkKeyword}
+                                disabled={!keywordInput.trim()}
                             >
-                                <Ionicons name="volume-medium-outline" size={24} color={Colors.primary} />
-                                <Text style={styles.playSoundText}>Play Sound</Text>
-                            </AnimatedPressable>
-                        )}
-                        <AnswerButtons card={card} onRate={submitRating} />
-                    </View>
-                )}
-            </View>
+                                <Text style={styles.checkButtonText}>Check</Text>
+                            </Pressable>
+                        </Animated.View>
+                    )}
+
+                    {isKeywordCorrect === true && (
+                        <Animated.View style={[
+                            styles.congratulationContainer,
+                            { 
+                                opacity: fadeAnim,
+                                transform: [{ scale: scaleAnim }]
+                            }
+                        ]}>
+                            <Ionicons name="star" size={24} color="#f59e0b" />
+                            <Text style={styles.congratulationText}>Correct! Well done!</Text>
+                        </Animated.View>
+                    )}
+                    {isKeywordCorrect === false && (
+                        <Text style={styles.errorText}>Oops! Try again.</Text>
+                    )}
+                </View>
+
+                {/* Actions */}
+                <View style={styles.footer}>
+                    {!showAnswer ? (
+                        <AnimatedPressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
+                            <Text style={styles.showAnswerText}>Show Answer</Text>
+                        </AnimatedPressable>
+                    ) : (
+                        <View style={styles.answerActionsContainer}>
+                            {currentSounds.length > 0 && (
+                                <AnimatedPressable
+                                    style={styles.playSoundButton}
+                                    onPress={() => SoundService.play(currentSounds[0])}
+                                >
+                                    <Ionicons name="volume-medium-outline" size={24} color={Colors.primary} />
+                                    <Text style={styles.playSoundText}>Play Sound</Text>
+                                </AnimatedPressable>
+                            )}
+                            <AnswerButtons card={card} onRate={submitRating} />
+                        </View>
+                    )}
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
@@ -236,5 +350,76 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: Colors.primary,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 16,
+        paddingHorizontal: 12,
+        height: 50,
+        backgroundColor: '#f9fafb',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+    },
+    inputWrapperError: {
+        borderColor: '#ef4444',
+        backgroundColor: '#fef2f2',
+    },
+    inputWrapperSuccess: {
+        borderColor: '#10b981',
+        backgroundColor: '#f0fdf4',
+    },
+    keywordInput: {
+        flex: 1,
+        fontSize: 16,
+        color: Colors.text,
+    },
+    checkButton: {
+        backgroundColor: Colors.primary,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        marginLeft: 8,
+    },
+    checkButtonDisabled: {
+        backgroundColor: '#cbd5e1',
+    },
+    checkButtonText: {
+        color: '#ffffff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    clearButton: {
+        padding: 4,
+        marginRight: 4,
+    },
+    inputError: {
+        color: '#ef4444',
+    },
+    inputSuccess: {
+        color: '#10b981',
+    },
+    errorText: {
+        color: '#ef4444',
+        fontSize: 14,
+        marginTop: 4,
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+    congratulationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 8,
+        backgroundColor: '#fef3c7',
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    congratulationText: {
+        marginLeft: 8,
+        color: '#92400e',
+        fontWeight: '600',
+        fontSize: 14,
     },
 });

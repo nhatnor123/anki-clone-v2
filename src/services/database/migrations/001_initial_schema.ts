@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS notes (
     note_type_id INTEGER NOT NULL REFERENCES note_types(id),
     guid         TEXT NOT NULL,
     fields       TEXT NOT NULL,
+    sfld         TEXT NOT NULL DEFAULT '',
     tags         TEXT DEFAULT '',
     checksum     INTEGER NOT NULL DEFAULT 0,
     created_at   INTEGER NOT NULL,

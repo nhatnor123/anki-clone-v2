@@ -25,9 +25,13 @@ export class AnkiDatabaseParser {
                 throw new Error('Invalid Anki database: Missing col table');
             }
 
+            console.log('Collection row:', collectionRow);
+
             const modelsJson = JSON.parse(collectionRow.models);
             const decksJson = JSON.parse(collectionRow.decks);
 
+            console.log('Models JSON:', modelsJson);
+            console.log('Decks JSON:', decksJson);
 
             const { noteTypes, fieldDefs, templates } = this.parseModels(modelsJson);
             const decks = this.parseDecks(decksJson);

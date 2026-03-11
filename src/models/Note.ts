@@ -3,6 +3,7 @@ export interface Note {
     note_type_id: number;
     guid: string;
     fields: string; // 0x1f-separated field values
+    sfld: string;   // Sort field (keyword)
     tags: string;
     checksum: number;
     created_at: number;

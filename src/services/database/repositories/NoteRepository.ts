@@ -8,13 +8,14 @@ export class NoteRepository {
 
   static async insert(note: Partial<Note>): Promise<number> {
     const result = await dbService.execute(
-      `INSERT OR REPLACE INTO notes (id, note_type_id, guid, fields, tags, checksum, created_at, modified_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO notes (id, note_type_id, guid, fields, sfld, tags, checksum, created_at, modified_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         note.id || null, // Anki original ID if imported
         note.note_type_id,
         note.guid,
         note.fields || '',
+        note.sfld || '',
         note.tags || '',
         note.checksum || 0,
         note.created_at || Date.now(),
