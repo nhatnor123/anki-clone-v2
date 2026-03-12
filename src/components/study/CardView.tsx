@@ -6,29 +6,6 @@ interface CardViewProps {
     html: string;
 }
 
-// export const CardView: React.FC<CardViewProps> = ({ html }) => {
-//     const baseUrl = `${FileSystem.documentDirectory}media/4000B1_001.jpg`; // TODO : revert
-//     console.log("baseUrl", baseUrl);
-//     return (
-//         <View style={styles.container}>
-//             <WebView
-//                 originWhitelist={['*']}
-//                 source={{ html }}
-//                 style={styles.webview}
-
-//                 scrollEnabled={true}
-//                 showsVerticalScrollIndicator={false}
-//                 allowFileAccess={true}
-//                 allowUniversalAccessFromFileURLs={true}
-//                 allowFileAccessFromFileURLs={true}
-//                 allowingReadAccessToURL={baseUrl}
-//                 javaScriptEnabled={true}
-//       domStorageEnabled={true}
-//             />
-//         </View>
-//     );
-// };
-
 export interface CardViewRef {
     scrollToBottom: () => void;
 }

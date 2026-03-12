@@ -39,9 +39,6 @@ export default function DeckListScreen() {
         });
     }, [navigation, router]);
 
-    // console.log("desks", decks);
-
-
     useFocusEffect(
         React.useCallback(() => {
             loadDecks();

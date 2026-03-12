@@ -56,7 +56,6 @@ export default function StudyScreen() {
     // Reset keyword state when card changes
     const currentCardId = queue[currentIndex]?.id;
     useEffect(() => {
-        // console.log('Resetting keyword state for card:', currentIndex, currentCardId);
         setKeywordInput('');
         setIsKeywordCorrect(null);
     }, [currentIndex, currentCardId]);
@@ -162,8 +161,6 @@ export default function StudyScreen() {
     }
 
     const card = queue[currentIndex];
-
-    // console.log("currentHtml", currentHtml);
 
     return (
         <SafeAreaView style={styles.container}>

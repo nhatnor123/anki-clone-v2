@@ -5,7 +5,6 @@ export class MediaExtractor {
     const tempDir = new Directory(tempExtractedPath);
     const mediaJsonFile = new File(tempDir, 'media');
 
-    // console.log("mediaJsonPath", mediaJsonFile.uri);
     if (!mediaJsonFile.exists) {
       return;
     }
@@ -14,7 +13,6 @@ export class MediaExtractor {
     const mediaMap: Record<string, string> = JSON.parse(mediaJsonString);
 
     const targetDir = new Directory(targetMediaDirectory);
-    // console.log("targetMediaDirectory", targetDir.uri);
     if (!targetDir.exists) {
       await targetDir.create({ intermediates: true });
     }
@@ -29,11 +27,9 @@ export class MediaExtractor {
       const destFile = new File(targetDir, realFilename);
 
       if (sourceFile.exists) {
-        // console.log("copying ", sourceFile.uri, "to", destFile.uri);
-        // check if destFile.uri contain 4000B1_001
-        // if (destFile.uri.includes("4000B1_001")) {
-        //   console.log("copying ", sourceFile.uri, "to", destFile.uri);
-        // }
+        if (destFile.exists) {
+          await destFile.delete();
+        }
         await sourceFile.copy(destFile);
       }
     }

@@ -25,7 +25,6 @@ export class SoundService {
             }
 
             const uri = `${this.mediaDir}${filename}`;
-            // console.log("Playing sound from:", uri);
 
             // WORKAROUND: Bypass createAudioPlayer due to signature mismatch in expo-audio (Received 4 arguments, but 3 expected)
             // The native constructor expects 3 arguments: (source, updateInterval, keepAudioSessionActive)
