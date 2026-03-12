@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, TextInput, Animated, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, TextInput, Animated, KeyboardAvoidingView, Platform, ScrollView, Alert, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStudyStore } from '@/stores/useStudyStore';
-import { CardView } from '@/components/study/CardView';
+import { CardView, CardViewRef } from '@/components/study/CardView';
 import { AnswerButtons } from '@/components/study/AnswerButtons';
 import { CardCounter } from '@/components/study/CardCounter';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +34,7 @@ export default function StudyScreen() {
     const shakeAnim = useRef(new Animated.Value(0)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const scaleAnim = useRef(new Animated.Value(0.8)).current;
+    const cardViewRef = useRef<CardViewRef>(null);
 
     useEffect(() => {
         if (deckId) {
@@ -59,6 +60,19 @@ export default function StudyScreen() {
         setKeywordInput('');
         setIsKeywordCorrect(null);
     }, [currentIndex, currentCardId]);
+
+    // Scroll WebView to bottom when keyboard appears
+    useEffect(() => {
+        const keyboardSubscription = Keyboard.addListener('keyboardDidShow', () => {
+            if (!showAnswer) {
+                cardViewRef.current?.scrollToBottom();
+            }
+        });
+
+        return () => {
+            keyboardSubscription.remove();
+        };
+    }, [showAnswer]);
 
     const handleShowAnswer = () => {
         setIsKeywordCorrect(null);
@@ -86,7 +100,7 @@ export default function StudyScreen() {
                     useNativeDriver: true,
                 })
             ]).start();
-            
+
             // Show answer immediately
             toggleAnswer();
         } else {
@@ -110,8 +124,8 @@ export default function StudyScreen() {
             "Are you sure you want to reset all cards in this deck to 'New'? This will clear your current learning progress.",
             [
                 { text: "Cancel", style: "cancel" },
-                { 
-                    text: "Reset Everything", 
+                {
+                    text: "Reset Everything",
                     style: "destructive",
                     onPress: async () => {
                         await resetDeckProgress();
@@ -177,7 +191,7 @@ export default function StudyScreen() {
             >
                 {/* Card Content */}
                 <View style={styles.cardContainer}>
-                    <CardView html={currentHtml} />
+                    <CardView ref={cardViewRef} html={currentHtml} />
 
                     {!showAnswer && (
                         <Animated.View style={[
@@ -203,8 +217,8 @@ export default function StudyScreen() {
                                 onSubmitEditing={checkKeyword}
                             />
                             {keywordInput.length > 0 && (
-                                <Pressable 
-                                    style={styles.clearButton} 
+                                <Pressable
+                                    style={styles.clearButton}
                                     onPress={() => {
                                         setKeywordInput('');
                                         setIsKeywordCorrect(null);
@@ -216,18 +230,7 @@ export default function StudyScreen() {
                         </Animated.View>
                     )}
 
-                    {isKeywordCorrect === true && (
-                        <Animated.View style={[
-                            styles.congratulationContainer,
-                            { 
-                                opacity: fadeAnim,
-                                transform: [{ scale: scaleAnim }]
-                            }
-                        ]}>
-                            <Ionicons name="star" size={24} color="#f59e0b" />
-                            <Text style={styles.congratulationText}>Correct! Well done!</Text>
-                        </Animated.View>
-                    )}
+
                     {isKeywordCorrect === false && (
                         <Text style={styles.errorText}>Oops! Try again.</Text>
                     )}
@@ -240,11 +243,11 @@ export default function StudyScreen() {
                             <AnimatedPressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
                                 <Text style={styles.showAnswerText}>Show Answer</Text>
                             </AnimatedPressable>
-                            <Pressable 
+                            <Pressable
                                 style={[
                                     styles.checkButton,
                                     !keywordInput.trim() && styles.checkButtonDisabled
-                                ]} 
+                                ]}
                                 onPress={checkKeyword}
                                 disabled={!keywordInput.trim()}
                             >
@@ -416,7 +419,9 @@ const styles = StyleSheet.create({
     },
     keywordInput: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 30,
+        fontWeight: '600',
+        textAlign: 'center',
         color: Colors.text,
     },
     actionRow: {
@@ -458,19 +463,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '500',
     },
-    congratulationContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 8,
-        backgroundColor: '#fef3c7',
-        paddingVertical: 8,
-        borderRadius: 8,
-    },
-    congratulationText: {
-        marginLeft: 8,
-        color: '#92400e',
-        fontWeight: '600',
-        fontSize: 14,
-    },
+
 });

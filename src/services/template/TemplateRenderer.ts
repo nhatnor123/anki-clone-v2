@@ -89,15 +89,13 @@ export class TemplateRenderer {
     });
 
     // 2.5. Filter Question Content (remove specific fields/tags from Question side)
-    if (!isAnswer) {
-      // Remove divs containing {{type:...}} or {{Short Vietnamese}}
-      const blockRegex = /<div[^>]*>\s*\{\{\s*(?:type:|Short Vietnamese)[\s\S]*?\}\}\s*<\/div>(?:\s*<br\s*\/?>)*/gi;
-      html = html.replace(blockRegex, '');
+    // Remove divs containing {{type:...}} or {{Short Vietnamese}}
+    const blockRegex = /<div[^>]*>\s*\{\{\s*(?:type:|Short Vietnamese)[\s\S]*?\}\}\s*<\/div>(?:\s*<br\s*\/?>)*/gi;
+    html = html.replace(blockRegex, '');
 
-      // Fallback for tags without surrounding divs
-      const tagRegex = /\{\{\s*(?:type:|Short Vietnamese)[\s\S]*?\}\}(?:\s*<br\s*\/?>)*/gi;
-      html = html.replace(tagRegex, '');
-    }
+    // Fallback for tags without surrounding divs
+    const tagRegex = /\{\{\s*(?:type:|Short Vietnamese)[\s\S]*?\}\}(?:\s*<br\s*\/?>)*/gi;
+    html = html.replace(tagRegex, '');
 
     // 3. Replace field placeholders
     noteType.fields.forEach((field, index) => {

@@ -29,10 +29,23 @@ interface CardViewProps {
 //     );
 // };
 
-export const CardView: React.FC<CardViewProps> = ({ html }) => {
+export interface CardViewRef {
+    scrollToBottom: () => void;
+}
+
+export const CardView = React.forwardRef<CardViewRef, CardViewProps>(({ html }, ref) => {
+    const webviewRef = React.useRef<WebView>(null);
+
+    React.useImperativeHandle(ref, () => ({
+        scrollToBottom: () => {
+            webviewRef.current?.injectJavaScript('window.scrollTo(0, document.body.scrollHeight);');
+        },
+    }));
+
     return (
         <View style={styles.container}>
             <WebView
+                ref={webviewRef}
                 originWhitelist={['*']}
                 source={{ html }}
                 style={styles.webview}
@@ -43,7 +56,7 @@ export const CardView: React.FC<CardViewProps> = ({ html }) => {
             />
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
