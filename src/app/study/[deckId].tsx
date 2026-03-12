@@ -213,16 +213,6 @@ export default function StudyScreen() {
                                     <Ionicons name="close-circle" size={20} color={Colors.textSecondary} />
                                 </Pressable>
                             )}
-                            <Pressable 
-                                style={[
-                                    styles.checkButton,
-                                    !keywordInput.trim() && styles.checkButtonDisabled
-                                ]} 
-                                onPress={checkKeyword}
-                                disabled={!keywordInput.trim()}
-                            >
-                                <Text style={styles.checkButtonText}>Check</Text>
-                            </Pressable>
                         </Animated.View>
                     )}
 
@@ -246,9 +236,21 @@ export default function StudyScreen() {
                 {/* Actions */}
                 <View style={styles.footer}>
                     {!showAnswer ? (
-                        <AnimatedPressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
-                            <Text style={styles.showAnswerText}>Show Answer</Text>
-                        </AnimatedPressable>
+                        <View style={styles.actionRow}>
+                            <AnimatedPressable style={styles.showAnswerButton} onPress={handleShowAnswer}>
+                                <Text style={styles.showAnswerText}>Show Answer</Text>
+                            </AnimatedPressable>
+                            <Pressable 
+                                style={[
+                                    styles.checkButton,
+                                    !keywordInput.trim() && styles.checkButtonDisabled
+                                ]} 
+                                onPress={checkKeyword}
+                                disabled={!keywordInput.trim()}
+                            >
+                                <Text style={styles.checkButtonText}>Check</Text>
+                            </Pressable>
+                        </View>
                     ) : (
                         <View style={styles.answerActionsContainer}>
                             {currentSounds.length > 0 && (
@@ -314,8 +316,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
     },
     showAnswerButton: {
-        margin: 8,
-        marginBottom: 0,
+        flex: 1,
+        margin: 4,
         backgroundColor: Colors.primary,
         paddingVertical: 14,
         borderRadius: 12,
@@ -417,20 +419,27 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: Colors.text,
     },
+    actionRow: {
+        flexDirection: 'row',
+        paddingHorizontal: 4,
+        paddingBottom: 0,
+    },
     checkButton: {
-        backgroundColor: Colors.primary,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
-        marginLeft: 8,
+        flex: 1,
+        backgroundColor: '#10b981', // Success green for check action
+        margin: 4,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     checkButtonDisabled: {
         backgroundColor: '#cbd5e1',
     },
     checkButtonText: {
         color: '#ffffff',
-        fontWeight: 'bold',
-        fontSize: 14,
+        fontWeight: '600',
+        fontSize: 18,
     },
     clearButton: {
         padding: 4,
