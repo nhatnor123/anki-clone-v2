@@ -43,8 +43,8 @@ export const useStudyStore = create<StudyState>((set, get) => ({
     loadQueue: async (deckId: number) => {
         set({ deckId, queue: [], currentIndex: 0, isComplete: false, currentNote: null });
         const todayEpochDay = Math.floor(Date.now() / 86400000);
-        // MVP limits: 20 new, 200 review
-        const queue = await CardRepository.getQueueForDeck(deckId, { new: 20, review: 200 }, todayEpochDay);
+        // MVP limits: 60 new, 200 review
+        const queue = await CardRepository.getQueueForDeck(deckId, { new: 60, review: 200 }, todayEpochDay);
 
         if (queue.length === 0) {
             set({ isComplete: true });
